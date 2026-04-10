@@ -34,7 +34,6 @@ def setup(python_exe, ext_dir, gpu_sm):
     print("[setup] Creating venv at %s ..." % venv)
     subprocess.run([python_exe, "-m", "venv", str(venv)], check=True)
 
-    pip(venv, "install", "--upgrade", "pip")
 
     # ------------------------------------------------------------------ #
     # PyTorch
