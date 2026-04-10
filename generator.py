@@ -1,0 +1,297 @@
+"""
+Hunyuan3D-2mv - Modly extension generator
+Reference: https://github.com/Tencent-Hunyuan/Hunyuan3D-2
+
+Pipeline:
+  1. Remove background from each provided view image with rembg
+  2. Run Hunyuan3DDiTFlowMatchingPipeline with front/left/back/right inputs
+  3. Export GLB
+"""
+import io
+import os
+import sys
+import time
+import uuid
+import threading
+import tempfile
+from pathlib import Path
+from typing import Callable, Optional
+
+from PIL import Image
+
+from services.generators.base import BaseGenerator, smooth_progress, GenerationCancelled
+
+_HF_REPO_ID = "tencent/Hunyuan3D-2mv"
+
+_SUBFOLDERS = {
+    "hunyuan3d-dit-v2-mv-turbo": "hunyuan3d-dit-v2-mv-turbo",
+    "hunyuan3d-dit-v2-mv":       "hunyuan3d-dit-v2-mv",
+}
+
+
+class Hunyuan3D2mvGenerator(BaseGenerator):
+    MODEL_ID     = "hunyuan3d2mv"
+    DISPLAY_NAME = "Hunyuan3D-2mv"
+    VRAM_GB      = 8
+
+    # ------------------------------------------------------------------ #
+    # Lifecycle
+    # ------------------------------------------------------------------ #
+
+    def is_downloaded(self):
+        marker = self.model_dir / "hunyuan3d-dit-v2-mv" / "model.fp16.safetensors"
+        return marker.exists()
+
+    def _ensure_hy3dgen_on_path(self):
+        repo_dir = Path(__file__).parent / "Hunyuan3D-2"
+        if not repo_dir.exists():
+            raise RuntimeError(
+                "Hunyuan3D-2 source not found at %s. "
+                "Please reinstall the extension." % repo_dir
+            )
+        if str(repo_dir) not in sys.path:
+            sys.path.insert(0, str(repo_dir))
+
+    def load(self):
+        if self._model is not None:
+            return
+
+        if not self.is_downloaded():
+            self._download_weights()
+
+        self._ensure_hy3dgen_on_path()
+
+        import torch
+        from hy3dgen.shapegen import Hunyuan3DDiTFlowMatchingPipeline
+        from hy3dgen.rembg import BackgroundRemover
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._device = device
+        self._rembg = BackgroundRemover()
+
+        # We load lazily per variant in generate() to allow switching
+        # but pre-warm with the default turbo model here.
+        self._loaded_variant = None
+        self._pipeline = None
+        self._torch = torch
+        self._Pipeline = Hunyuan3DDiTFlowMatchingPipeline
+
+        self._model = True  # non-None sentinel for BaseGenerator
+        print("[Hunyuan3D2mvGenerator] Ready on %s." % device)
+
+    def _load_variant(self, variant):
+        if self._loaded_variant == variant:
+            return
+        import torch
+        print("[Hunyuan3D2mvGenerator] Loading variant: %s ..." % variant)
+        if self._pipeline is not None:
+            del self._pipeline
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        subfolder = _SUBFOLDERS.get(variant, "hunyuan3d-dit-v2-mv-turbo")
+        self._pipeline = self._Pipeline.from_pretrained(
+            str(self.model_dir),
+            subfolder=subfolder,
+            use_safetensors=True,
+            device=self._device,
+        )
+        self._loaded_variant = variant
+        print("[Hunyuan3D2mvGenerator] Variant loaded: %s" % variant)
+
+    def unload(self):
+        self._pipeline = None
+        self._loaded_variant = None
+        self._model = None
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
+
+    # ------------------------------------------------------------------ #
+    # Inference
+    # ------------------------------------------------------------------ #
+
+    def generate(
+        self,
+        image_bytes,
+        params,
+        progress_cb=None,
+        cancel_event=None,
+    ):
+        import torch
+
+        variant        = params.get("model_variant", "hunyuan3d-dit-v2-mv-turbo")
+        steps          = int(params.get("num_inference_steps", 30))
+        octree_res     = int(params.get("octree_resolution", 380))
+        seed           = int(params.get("seed", 42))
+        left_path      = params.get("left_image_path", "")
+        back_path      = params.get("back_image_path", "")
+        right_path     = params.get("right_image_path", "")
+
+        # -- Background removal & preprocessing ---------------------------
+        self._report(progress_cb, 5, "Preprocessing front view...")
+        front_image = self._preprocess_bytes(image_bytes)
+        self._check_cancelled(cancel_event)
+
+        image_dict = {"front": front_image}
+
+        if left_path and os.path.isfile(left_path):
+            self._report(progress_cb, 10, "Preprocessing left view...")
+            image_dict["left"] = self._preprocess_path(left_path)
+            self._check_cancelled(cancel_event)
+
+        if back_path and os.path.isfile(back_path):
+            self._report(progress_cb, 14, "Preprocessing back view...")
+            image_dict["back"] = self._preprocess_path(back_path)
+            self._check_cancelled(cancel_event)
+
+        if right_path and os.path.isfile(right_path):
+            self._report(progress_cb, 18, "Preprocessing right view...")
+            image_dict["right"] = self._preprocess_path(right_path)
+            self._check_cancelled(cancel_event)
+
+        # -- Load variant -------------------------------------------------
+        self._report(progress_cb, 22, "Loading model variant...")
+        self._load_variant(variant)
+        self._check_cancelled(cancel_event)
+
+        # -- Shape generation ---------------------------------------------
+        self._report(progress_cb, 30, "Generating mesh...")
+        stop_evt = threading.Event()
+        if progress_cb:
+            t = threading.Thread(
+                target=smooth_progress,
+                args=(progress_cb, 30, 92, "Generating mesh...", stop_evt),
+                daemon=True,
+            )
+            t.start()
+
+        try:
+            generator = torch.Generator(device=self._device).manual_seed(seed)
+            with torch.no_grad():
+                mesh = self._pipeline(
+                    image=image_dict,
+                    num_inference_steps=steps,
+                    octree_resolution=octree_res,
+                    num_chunks=20000,
+                    generator=generator,
+                    output_type="trimesh",
+                )[0]
+        finally:
+            stop_evt.set()
+
+        self._check_cancelled(cancel_event)
+
+        # -- Export GLB ---------------------------------------------------
+        self._report(progress_cb, 94, "Exporting GLB...")
+        self.outputs_dir.mkdir(parents=True, exist_ok=True)
+        name     = "%d_%s.glb" % (int(time.time()), uuid.uuid4().hex[:8])
+        out_path = self.outputs_dir / name
+        mesh.export(str(out_path))
+
+        self._report(progress_cb, 100, "Done")
+        return out_path
+
+    # ------------------------------------------------------------------ #
+    # Helpers
+    # ------------------------------------------------------------------ #
+
+    def _preprocess_bytes(self, image_bytes):
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        return self._remove_bg(img)
+
+    def _preprocess_path(self, path):
+        img = Image.open(path).convert("RGB")
+        return self._remove_bg(img)
+
+    def _remove_bg(self, img):
+        try:
+            result = self._rembg(img)
+            return result
+        except Exception:
+            # Fall back: return image as-is if rembg fails
+            return img
+
+    def _download_weights(self):
+        from huggingface_hub import snapshot_download
+        self.model_dir.mkdir(parents=True, exist_ok=True)
+        print("[Hunyuan3D2mvGenerator] Downloading weights from %s ..." % _HF_REPO_ID)
+        snapshot_download(
+            repo_id=_HF_REPO_ID,
+            local_dir=str(self.model_dir),
+            ignore_patterns=["*.md", "*.txt", ".gitattributes"],
+        )
+        print("[Hunyuan3D2mvGenerator] Weights downloaded.")
+
+    @classmethod
+    def params_schema(cls):
+        return [
+            {
+                "id":      "model_variant",
+                "label":   "Model Variant",
+                "type":    "select",
+                "default": "hunyuan3d-dit-v2-mv-turbo",
+                "options": [
+                    {"value": "hunyuan3d-dit-v2-mv-turbo", "label": "Turbo (faster)"},
+                    {"value": "hunyuan3d-dit-v2-mv",       "label": "Standard (better quality)"},
+                ],
+                "tooltip": "Turbo is distilled and roughly 2x faster. Standard gives slightly better geometry.",
+            },
+            {
+                "id":      "num_inference_steps",
+                "label":   "Inference Steps",
+                "type":    "select",
+                "default": 30,
+                "options": [
+                    {"value": 10, "label": "Fast (10)"},
+                    {"value": 30, "label": "Balanced (30)"},
+                    {"value": 50, "label": "Quality (50)"},
+                ],
+                "tooltip": "Number of diffusion steps.",
+            },
+            {
+                "id":      "octree_resolution",
+                "label":   "Mesh Resolution",
+                "type":    "select",
+                "default": 380,
+                "options": [
+                    {"value": 256, "label": "Low (256)"},
+                    {"value": 380, "label": "Medium (380)"},
+                    {"value": 512, "label": "High (512)"},
+                ],
+                "tooltip": "Octree resolution. Higher = more detail but more VRAM.",
+            },
+            {
+                "id":      "left_image_path",
+                "label":   "Left View Image (optional)",
+                "type":    "image_path",
+                "default": "",
+                "tooltip": "Optional left-side view image.",
+            },
+            {
+                "id":      "back_image_path",
+                "label":   "Back View Image (optional)",
+                "type":    "image_path",
+                "default": "",
+                "tooltip": "Optional back view image.",
+            },
+            {
+                "id":      "right_image_path",
+                "label":   "Right View Image (optional)",
+                "type":    "image_path",
+                "default": "",
+                "tooltip": "Optional right-side view image.",
+            },
+            {
+                "id":      "seed",
+                "label":   "Seed",
+                "type":    "int",
+                "default": 42,
+                "min":     0,
+                "max":     4294967295,
+                "tooltip": "Change if result is unsatisfying.",
+            },
+        ]

@@ -1,0 +1,92 @@
+{
+  "id": "hunyuan3d2mv",
+  "name": "Hunyuan3D-2mv",
+  "type": "model",
+  "source": "https://github.com/iammojogo-sudo/hunyuan3d2mv_extension_modly",
+  "description": "Multi-view image-to-3D mesh generation using Tencent Hunyuan3D-2mv. Accepts front, left, back and right view images to reconstruct a detailed untextured mesh. Only the front view is required.",
+  "version": "1.0.0",
+  "author": "Lightning Pixel",
+  "generator_class": "Hunyuan3D2mvGenerator",
+  "tags": [
+    "image-to-3d",
+    "multi-view",
+    "mesh"
+  ],
+  "nodes": [
+    {
+      "id": "generate",
+      "name": "Generate Mesh",
+      "input": "image",
+      "output": "mesh",
+      "hf_repo": "tencent/Hunyuan3D-2mv",
+      "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
+      "params_schema": [
+        {
+          "id": "model_variant",
+          "label": "Model Variant",
+          "type": "select",
+          "default": "hunyuan3d-dit-v2-mv-turbo",
+          "options": [
+            { "value": "hunyuan3d-dit-v2-mv-turbo", "label": "Turbo (faster)" },
+            { "value": "hunyuan3d-dit-v2-mv",        "label": "Standard (better quality)" }
+          ],
+          "tooltip": "Turbo is a distilled model roughly 2x faster. Standard gives slightly better geometry."
+        },
+        {
+          "id": "num_inference_steps",
+          "label": "Inference Steps",
+          "type": "select",
+          "default": 30,
+          "options": [
+            { "value": 10, "label": "Fast (10)" },
+            { "value": 30, "label": "Balanced (30)" },
+            { "value": 50, "label": "Quality (50)" }
+          ],
+          "tooltip": "Number of diffusion steps. More steps = better quality but slower."
+        },
+        {
+          "id": "octree_resolution",
+          "label": "Mesh Resolution",
+          "type": "select",
+          "default": 380,
+          "options": [
+            { "value": 256, "label": "Low (256)" },
+            { "value": 380, "label": "Medium (380)" },
+            { "value": 512, "label": "High (512)" }
+          ],
+          "tooltip": "Octree resolution controls mesh detail. Higher values need more VRAM."
+        },
+        {
+          "id": "left_image_path",
+          "label": "Left View Image (optional)",
+          "type": "image_path",
+          "default": "",
+          "tooltip": "Optional left-side view image to improve geometry reconstruction."
+        },
+        {
+          "id": "back_image_path",
+          "label": "Back View Image (optional)",
+          "type": "image_path",
+          "default": "",
+          "tooltip": "Optional back view image to improve geometry reconstruction."
+        },
+        {
+          "id": "right_image_path",
+          "label": "Right View Image (optional)",
+          "type": "image_path",
+          "default": "",
+          "tooltip": "Optional right-side view image to improve geometry reconstruction."
+        },
+        {
+          "id": "seed",
+          "label": "Seed",
+          "type": "int",
+          "default": 42,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Change the seed if the result is unsatisfying."
+        }
+      ]
+    }
+  ]
+}
