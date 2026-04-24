@@ -24,8 +24,14 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvTurboGenerator",
       "params_schema": [
+        {
+          "id": "generator_class",
+          "label": "Generator Class",
+          "type": "hidden",
+          "default": "Hunyuan3D2mvTurboGenerator",
+          "tooltip": "Generator class (locked)."
+        },
         {
           "id": "model_variant",
           "label": "Model Variant",
@@ -147,8 +153,14 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvFastGenerator",
       "params_schema": [
+        {
+          "id": "generator_class",
+          "label": "Generator Class",
+          "type": "hidden",
+          "default": "Hunyuan3D2mvFastGenerator",
+          "tooltip": "Generator class (locked)."
+        },
         {
           "id": "model_variant",
           "label": "Model Variant",
@@ -270,8 +282,14 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvStandardGenerator",
       "params_schema": [
+        {
+          "id": "generator_class",
+          "label": "Generator Class",
+          "type": "hidden",
+          "default": "Hunyuan3D2mvStandardGenerator",
+          "tooltip": "Generator class (locked)."
+        },
         {
           "id": "model_variant",
           "label": "Model Variant",
