@@ -15,7 +15,6 @@
     {
       "id": "generate-turbo",
       "name": "Generate Mesh (Turbo)",
-      //"input": "image",
       "inputs": [
         {
           "id": "front_image",
