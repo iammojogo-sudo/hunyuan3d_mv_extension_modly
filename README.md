@@ -102,3 +102,7 @@ NOTE: the standard can work ok on 6GB VRAM but takes a while. It is recommended 
 Questions? Contact me or the Modly team as I will be giving all of this to them for future updates. 
 
 FUTURE UPDATE: Added options to the mv generation as well as possible texturing ability since mv initially did not come with it. 
+
+
+
+###ONCE EXTENSIONS ARE INSTALLED - DO NOT FORGET TO DOWNLOAD ANY WEIGHTS BEFORE TRYING TO USE THE EXTENSIONS###
