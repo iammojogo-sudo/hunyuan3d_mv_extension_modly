@@ -15,6 +15,7 @@
     {
       "id": "generate-turbo",
       "name": "Generate Mesh (Turbo)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Front" },
         { "id": "left_image",  "type": "image", "label": "Left"  },
@@ -24,7 +25,6 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvTurboGenerator",
       "params_schema": [
         {
           "id": "model_variant",
@@ -133,11 +133,13 @@
           "max": 4294967295,
           "tooltip": "Change if result is unsatisfying."
         }
-      ]
+      ],
+      "generator_class": "Hunyuan3D2mvTurboGenerator"
     },
     {
       "id": "generate-fast",
       "name": "Generate Mesh (Fast)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Front" },
         { "id": "left_image",  "type": "image", "label": "Left"  },
@@ -147,7 +149,6 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvFastGenerator",
       "params_schema": [
         {
           "id": "model_variant",
@@ -189,11 +190,11 @@
           "type": "select",
           "default": "5.0",
           "options": [
-            { "value": "1.0",  "label": "1.0 — loose"    },
-            { "value": "3.0",  "label": "3.0"            },
-            { "value": "5.0",  "label": "5.0 — default"  },
-            { "value": "7.5",  "label": "7.5"            },
-            { "value": "10.0", "label": "10.0 — tight"   }
+            { "value": "1.0",  "label": "1.0 — loose"   },
+            { "value": "3.0",  "label": "3.0"           },
+            { "value": "5.0",  "label": "5.0 — default" },
+            { "value": "7.5",  "label": "7.5"           },
+            { "value": "10.0", "label": "10.0 — tight"  }
           ],
           "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
         },
@@ -256,11 +257,13 @@
           "max": 4294967295,
           "tooltip": "Change if result is unsatisfying."
         }
-      ]
+      ],
+      "generator_class": "Hunyuan3D2mvFastGenerator"
     },
     {
       "id": "generate",
       "name": "Generate Mesh (Standard)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Front" },
         { "id": "left_image",  "type": "image", "label": "Left"  },
@@ -270,7 +273,6 @@
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "generator_class": "Hunyuan3D2mvStandardGenerator",
       "params_schema": [
         {
           "id": "model_variant",
@@ -312,11 +314,11 @@
           "type": "select",
           "default": "5.0",
           "options": [
-            { "value": "1.0",  "label": "1.0 — loose"    },
-            { "value": "3.0",  "label": "3.0"            },
-            { "value": "5.0",  "label": "5.0 — default"  },
-            { "value": "7.5",  "label": "7.5"            },
-            { "value": "10.0", "label": "10.0 — tight"   }
+            { "value": "1.0",  "label": "1.0 — loose"   },
+            { "value": "3.0",  "label": "3.0"           },
+            { "value": "5.0",  "label": "5.0 — default" },
+            { "value": "7.5",  "label": "7.5"           },
+            { "value": "10.0", "label": "10.0 — tight"  }
           ],
           "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
         },
@@ -379,7 +381,9 @@
           "max": 4294967295,
           "tooltip": "Change if result is unsatisfying."
         }
-      ]
+      ],
+      "generator_class": "Hunyuan3D2mvStandardGenerator"
     }
-  ]
+  ],
+  "generator_class": "Hunyuan3D2mvGenerator"
 }
