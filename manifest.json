@@ -15,6 +15,7 @@
     {
       "id": "generate-turbo",
       "name": "Generate Mesh (Turbo)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Image" }
       ],
@@ -135,6 +136,7 @@
     {
       "id": "generate-fast",
       "name": "Generate Mesh (Fast)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Image" }
       ],
@@ -255,6 +257,7 @@
     {
       "id": "generate",
       "name": "Generate Mesh (Standard)",
+      "input": "image",
       "inputs": [
         { "id": "front_image", "type": "image", "label": "Image" }
       ],
