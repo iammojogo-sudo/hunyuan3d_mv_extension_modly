@@ -2,7 +2,7 @@
   "id": "hunyuan3d2mv",
   "name": "Hunyuan3D-2mv",
   "type": "model",
-  "source": "https://github.com/iammojogo-sudo/hunyuan3d2mv_extension_modly",
+  "source": "https://github.com/iammojogo-sudo/hunyuan3d_mv_extension_modly",
   "description": "Multi-view image-to-3D mesh generation using Tencent Hunyuan3D-2mv. Accepts front, left, back and right view images to reconstruct a detailed untextured mesh. Only the front view is required.",
   "version": "1.0.0",
   "author": "Lightning Pixel",
@@ -16,26 +16,10 @@
       "id": "generate-turbo",
       "name": "Generate Mesh (Turbo)",
       "inputs": [
-        {
-          "id": "front_image",
-          "type": "image",
-          "label": "Front"
-        },
-        {
-          "id": "left_image",
-          "type": "image",
-          "label": "Left"
-        },
-        {
-          "id": "back_image",
-          "type": "image",
-          "label": "Back"
-        },
-        {
-          "id": "right_image",
-          "type": "image",
-          "label": "Right"
-        }
+        { "id": "front_image", "type": "image", "label": "Front" },
+        { "id": "left_image",  "type": "image", "label": "Left"  },
+        { "id": "back_image",  "type": "image", "label": "Back"  },
+        { "id": "right_image", "type": "image", "label": "Right" }
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
@@ -47,10 +31,7 @@
           "type": "select",
           "default": "hunyuan3d-dit-v2-mv-turbo",
           "options": [
-            {
-              "value": "hunyuan3d-dit-v2-mv-turbo",
-              "label": "hunyuan3d-dit-v2-mv-turbo"
-            }
+            { "value": "hunyuan3d-dit-v2-mv-turbo", "label": "hunyuan3d-dit-v2-mv-turbo" }
           ],
           "tooltip": "Model variant (locked per node)."
         },
@@ -60,18 +41,9 @@
           "type": "select",
           "default": 30,
           "options": [
-            {
-              "value": 10,
-              "label": "Fast (10)"
-            },
-            {
-              "value": 30,
-              "label": "Balanced (30)"
-            },
-            {
-              "value": 50,
-              "label": "Quality (50)"
-            }
+            { "value": 10, "label": "Fast (10)"     },
+            { "value": 30, "label": "Balanced (30)" },
+            { "value": 50, "label": "Quality (50)"  }
           ],
           "tooltip": "Number of diffusion steps."
         },
@@ -81,20 +53,75 @@
           "type": "select",
           "default": 380,
           "options": [
-            {
-              "value": 256,
-              "label": "Low (256)"
-            },
-            {
-              "value": 380,
-              "label": "Medium (380)"
-            },
-            {
-              "value": 512,
-              "label": "High (512)"
-            }
+            { "value": 256, "label": "Low (256)"    },
+            { "value": 380, "label": "Medium (380)" },
+            { "value": 512, "label": "High (512)"   }
           ],
           "tooltip": "Octree resolution. Higher = more detail but more VRAM."
+        },
+        {
+          "id": "guidance_scale",
+          "label": "Guidance Scale",
+          "type": "select",
+          "default": "5.0",
+          "options": [
+            { "value": "1.0",  "label": "1.0 — loose"    },
+            { "value": "3.0",  "label": "3.0"            },
+            { "value": "5.0",  "label": "5.0 — default"  },
+            { "value": "7.5",  "label": "7.5"            },
+            { "value": "10.0", "label": "10.0 — tight"   }
+          ],
+          "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
+        },
+        {
+          "id": "num_chunks",
+          "label": "Decode Chunks",
+          "type": "select",
+          "default": 8000,
+          "options": [
+            { "value": 2000,  "label": "Low (2000) — less VRAM" },
+            { "value": 8000,  "label": "Medium (8000)"          },
+            { "value": 20000, "label": "High (20000) — faster"  }
+          ],
+          "tooltip": "VAE decode chunk size. Lower saves VRAM; higher is faster."
+        },
+        {
+          "id": "box_v",
+          "label": "Bounding Box Scale",
+          "type": "select",
+          "default": "1.01",
+          "options": [
+            { "value": "0.75", "label": "0.75 — small"      },
+            { "value": "1.01", "label": "1.01 — default"    },
+            { "value": "1.25", "label": "1.25 — large"      },
+            { "value": "1.5",  "label": "1.5 — extra large" }
+          ],
+          "tooltip": "Bounding box scale for mesh extraction. Increase if mesh edges are being clipped."
+        },
+        {
+          "id": "mc_level",
+          "label": "Surface Level",
+          "type": "select",
+          "default": "0.0",
+          "options": [
+            { "value": "-0.05", "label": "-0.05 — thicker" },
+            { "value": "-0.02", "label": "-0.02"           },
+            { "value": "0.0",   "label": "0.0 — default"   },
+            { "value": "0.02",  "label": "0.02"            },
+            { "value": "0.05",  "label": "0.05 — thinner"  }
+          ],
+          "tooltip": "Marching cubes iso-surface level. Increase to thin the mesh; decrease to thicken it."
+        },
+        {
+          "id": "remove_bg",
+          "label": "Remove Background",
+          "type": "select",
+          "default": "true",
+          "options": [
+            { "value": "true",  "label": "Yes — auto remove background" },
+            { "value": "false", "label": "No — images already masked"   }
+          ],
+          "tooltip": "Run rembg on input images. Disable if your images already have a transparent background."
         },
         {
           "id": "seed",
@@ -108,200 +135,37 @@
       ],
       "generator_class": "Hunyuan3D2mvTurboGenerator"
     },
+
     {
       "id": "generate-fast",
       "name": "Generate Mesh (Fast)",
-      "input": "image",
       "inputs": [
-        {
-          "id": "front_image",
-          "type": "image",
-          "label": "Front"
-        },
-        {
-          "id": "left_image",
-          "type": "image",
-          "label": "Left"
-        },
-        {
-          "id": "back_image",
-          "type": "image",
-          "label": "Back"
-        },
-        {
-          "id": "right_image",
-          "type": "image",
-          "label": "Right"
-        }
+        { "id": "front_image", "type": "image", "label": "Front" },
+        { "id": "left_image",  "type": "image", "label": "Left"  },
+        { "id": "back_image",  "type": "image", "label": "Back"  },
+        { "id": "right_image", "type": "image", "label": "Right" }
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "params_schema": [
-        {
-          "id": "model_variant",
-          "label": "Model Variant",
-          "type": "select",
-          "default": "hunyuan3d-dit-v2-mv-fast",
-          "options": [
-            {
-              "value": "hunyuan3d-dit-v2-mv-fast",
-              "label": "hunyuan3d-dit-v2-mv-fast"
-            }
-          ],
-          "tooltip": "Model variant (locked per node)."
-        },
-        {
-          "id": "num_inference_steps",
-          "label": "Inference Steps",
-          "type": "select",
-          "default": 30,
-          "options": [
-            {
-              "value": 10,
-              "label": "Fast (10)"
-            },
-            {
-              "value": 30,
-              "label": "Balanced (30)"
-            },
-            {
-              "value": 50,
-              "label": "Quality (50)"
-            }
-          ],
-          "tooltip": "Number of diffusion steps."
-        },
-        {
-          "id": "octree_resolution",
-          "label": "Mesh Resolution",
-          "type": "select",
-          "default": 380,
-          "options": [
-            {
-              "value": 256,
-              "label": "Low (256)"
-            },
-            {
-              "value": 380,
-              "label": "Medium (380)"
-            },
-            {
-              "value": 512,
-              "label": "High (512)"
-            }
-          ],
-          "tooltip": "Octree resolution. Higher = more detail but more VRAM."
-        },
-        {
-          "id": "seed",
-          "label": "Seed",
-          "type": "int",
-          "default": 42,
-          "min": 0,
-          "max": 4294967295,
-          "tooltip": "Change if result is unsatisfying."
-        }
-      ],
+      "params_schema": [ SAME AS ABOVE ],
       "generator_class": "Hunyuan3D2mvFastGenerator"
     },
+
     {
       "id": "generate",
       "name": "Generate Mesh (Standard)",
-      "input": "image",
       "inputs": [
-        {
-          "id": "front_image",
-          "type": "image",
-          "label": "Front"
-        },
-        {
-          "id": "left_image",
-          "type": "image",
-          "label": "Left"
-        },
-        {
-          "id": "back_image",
-          "type": "image",
-          "label": "Back"
-        },
-        {
-          "id": "right_image",
-          "type": "image",
-          "label": "Right"
-        }
+        { "id": "front_image", "type": "image", "label": "Front" },
+        { "id": "left_image",  "type": "image", "label": "Left"  },
+        { "id": "back_image",  "type": "image", "label": "Back"  },
+        { "id": "right_image", "type": "image", "label": "Right" }
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "params_schema": [
-        {
-          "id": "model_variant",
-          "label": "Model Variant",
-          "type": "select",
-          "default": "hunyuan3d-dit-v2-mv",
-          "options": [
-            {
-              "value": "hunyuan3d-dit-v2-mv",
-              "label": "hunyuan3d-dit-v2-mv"
-            }
-          ],
-          "tooltip": "Model variant (locked per node)."
-        },
-        {
-          "id": "num_inference_steps",
-          "label": "Inference Steps",
-          "type": "select",
-          "default": 30,
-          "options": [
-            {
-              "value": 10,
-              "label": "Fast (10)"
-            },
-            {
-              "value": 30,
-              "label": "Balanced (30)"
-            },
-            {
-              "value": 50,
-              "label": "Quality (50)"
-            }
-          ],
-          "tooltip": "Number of diffusion steps."
-        },
-        {
-          "id": "octree_resolution",
-          "label": "Mesh Resolution",
-          "type": "select",
-          "default": 380,
-          "options": [
-            {
-              "value": 256,
-              "label": "Low (256)"
-            },
-            {
-              "value": 380,
-              "label": "Medium (380)"
-            },
-            {
-              "value": 512,
-              "label": "High (512)"
-            }
-          ],
-          "tooltip": "Octree resolution. Higher = more detail but more VRAM."
-        },
-        {
-          "id": "seed",
-          "label": "Seed",
-          "type": "int",
-          "default": 42,
-          "min": 0,
-          "max": 4294967295,
-          "tooltip": "Change if result is unsatisfying."
-        }
-      ],
+      "params_schema": [ SAME AS ABOVE ],
       "generator_class": "Hunyuan3D2mvStandardGenerator"
     }
-  ],
-  "generator_class": "Hunyuan3D2mvGenerator"
+  ]
 }
