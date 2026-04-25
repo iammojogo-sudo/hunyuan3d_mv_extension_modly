@@ -6,7 +6,6 @@
   "description": "Multi-view image-to-3D mesh generation using Tencent Hunyuan3D-2mv. Accepts front, left, back and right view images to reconstruct a detailed untextured mesh. Only the front view is required.",
   "version": "1.0.0",
   "author": "Lightning Pixel",
-  "vram_gb": 8,
   "tags": [
     "image-to-3d",
     "multi-view",
@@ -18,35 +17,14 @@
       "name": "Generate Mesh (Turbo)",
       "input": "image",
       "inputs": [
-        {
-          "name": "front",
-          "type": "image",
-          "required": true
-        },
-        {
-          "name": "left",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "back",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "right",
-          "type": "image",
-          "required": false
-        }
+        "image",
+        "image",
+        "image",
+        "image"
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
-      "download_check": "hunyuan3d-dit-v2-mv-turbo/model.fp16.safetensors",
-      "hf_skip_prefixes": [
-        "hunyuan3d-dit-v2-mv-fast/",
-        "hunyuan3d-dit-v2-mv/",
-        "hunyuan3d-dit-v2-mv-turbo/model.fp16.ckpt"
-      ],
+      "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
       "params_schema": [
         {
           "id": "model_variant",
@@ -56,10 +34,10 @@
           "options": [
             {
               "value": "hunyuan3d-dit-v2-mv-turbo",
-              "label": "Turbo"
+              "label": "hunyuan3d-dit-v2-mv-turbo"
             }
           ],
-          "tooltip": "Model variant locked for this node."
+          "tooltip": "Model variant (locked per node)."
         },
         {
           "id": "num_inference_steps",
@@ -101,7 +79,7 @@
               "label": "High (512)"
             }
           ],
-          "tooltip": "Octree resolution. Higher values use more VRAM."
+          "tooltip": "Octree resolution. Higher = more detail but more VRAM."
         },
         {
           "id": "guidance_scale",
@@ -111,22 +89,26 @@
           "options": [
             {
               "value": "1.0",
-              "label": "Loose (1.0)"
+              "label": "1.0 \u2014 loose"
+            },
+            {
+              "value": "3.0",
+              "label": "3.0"
             },
             {
               "value": "5.0",
-              "label": "Default (5.0)"
+              "label": "5.0 \u2014 default"
             },
             {
               "value": "7.5",
-              "label": "Strong (7.5)"
+              "label": "7.5"
             },
             {
               "value": "10.0",
-              "label": "Tight (10.0)"
+              "label": "10.0 \u2014 tight"
             }
           ],
-          "tooltip": "Classifier-free guidance strength."
+          "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
         },
         {
           "id": "num_chunks",
@@ -136,18 +118,18 @@
           "options": [
             {
               "value": 2000,
-              "label": "Low VRAM (2000)"
+              "label": "Low (2000) \u2014 less VRAM"
             },
             {
               "value": 8000,
-              "label": "Balanced (8000)"
+              "label": "Medium (8000)"
             },
             {
               "value": 20000,
-              "label": "Fast (20000)"
+              "label": "High (20000) \u2014 faster"
             }
           ],
-          "tooltip": "VAE decode chunk size. Lower values reduce VRAM usage."
+          "tooltip": "VAE decode chunk size. Lower saves VRAM; higher is faster."
         },
         {
           "id": "box_v",
@@ -157,18 +139,22 @@
           "options": [
             {
               "value": "0.75",
-              "label": "Small (0.75)"
+              "label": "0.75 \u2014 small"
             },
             {
               "value": "1.01",
-              "label": "Default (1.01)"
+              "label": "1.01 \u2014 default"
             },
             {
               "value": "1.25",
-              "label": "Large (1.25)"
+              "label": "1.25 \u2014 large"
+            },
+            {
+              "value": "1.5",
+              "label": "1.5 \u2014 extra large"
             }
           ],
-          "tooltip": "Increase if mesh edges are clipped."
+          "tooltip": "Bounding box scale for mesh extraction. Increase if mesh edges are being clipped."
         },
         {
           "id": "mc_level",
@@ -178,18 +164,26 @@
           "options": [
             {
               "value": "-0.05",
-              "label": "Thicker (-0.05)"
+              "label": "-0.05 \u2014 thicker"
+            },
+            {
+              "value": "-0.02",
+              "label": "-0.02"
             },
             {
               "value": "0.0",
-              "label": "Default (0.0)"
+              "label": "0.0 \u2014 default"
+            },
+            {
+              "value": "0.02",
+              "label": "0.02"
             },
             {
               "value": "0.05",
-              "label": "Thinner (0.05)"
+              "label": "0.05 \u2014 thinner"
             }
           ],
-          "tooltip": "Marching-cubes iso-surface level."
+          "tooltip": "Marching cubes iso-surface level. Increase to thin the mesh; decrease to thicken it."
         },
         {
           "id": "remove_bg",
@@ -199,71 +193,14 @@
           "options": [
             {
               "value": "true",
-              "label": "Yes"
+              "label": "Yes \u2014 auto remove background"
             },
             {
               "value": "false",
-              "label": "No"
+              "label": "No \u2014 images already masked"
             }
           ],
-          "tooltip": "Run rembg before generation."
-        },
-        {
-          "id": "left_image_path",
-          "label": "Left View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional left-side view image path."
-        },
-        {
-          "id": "back_image_path",
-          "label": "Back View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional back view image path."
-        },
-        {
-          "id": "right_image_path",
-          "label": "Right View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional right-side view image path."
+          "tooltip": "Run rembg on input images. Disable if your images already have a transparent background."
         },
         {
           "id": "seed",
@@ -282,35 +219,14 @@
       "name": "Generate Mesh (Fast)",
       "input": "image",
       "inputs": [
-        {
-          "name": "front",
-          "type": "image",
-          "required": true
-        },
-        {
-          "name": "left",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "back",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "right",
-          "type": "image",
-          "required": false
-        }
+        "image",
+        "image",
+        "image",
+        "image"
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
-      "download_check": "hunyuan3d-dit-v2-mv-fast/model.fp16.safetensors",
-      "hf_skip_prefixes": [
-        "hunyuan3d-dit-v2-mv-turbo/",
-        "hunyuan3d-dit-v2-mv/",
-        "hunyuan3d-dit-v2-mv-fast/model.fp16.ckpt"
-      ],
+      "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
       "params_schema": [
         {
           "id": "model_variant",
@@ -320,10 +236,10 @@
           "options": [
             {
               "value": "hunyuan3d-dit-v2-mv-fast",
-              "label": "Fast"
+              "label": "hunyuan3d-dit-v2-mv-fast"
             }
           ],
-          "tooltip": "Model variant locked for this node."
+          "tooltip": "Model variant (locked per node)."
         },
         {
           "id": "num_inference_steps",
@@ -365,7 +281,7 @@
               "label": "High (512)"
             }
           ],
-          "tooltip": "Octree resolution. Higher values use more VRAM."
+          "tooltip": "Octree resolution. Higher = more detail but more VRAM."
         },
         {
           "id": "guidance_scale",
@@ -375,22 +291,26 @@
           "options": [
             {
               "value": "1.0",
-              "label": "Loose (1.0)"
+              "label": "1.0 \u2014 loose"
+            },
+            {
+              "value": "3.0",
+              "label": "3.0"
             },
             {
               "value": "5.0",
-              "label": "Default (5.0)"
+              "label": "5.0 \u2014 default"
             },
             {
               "value": "7.5",
-              "label": "Strong (7.5)"
+              "label": "7.5"
             },
             {
               "value": "10.0",
-              "label": "Tight (10.0)"
+              "label": "10.0 \u2014 tight"
             }
           ],
-          "tooltip": "Classifier-free guidance strength."
+          "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
         },
         {
           "id": "num_chunks",
@@ -400,18 +320,18 @@
           "options": [
             {
               "value": 2000,
-              "label": "Low VRAM (2000)"
+              "label": "Low (2000) \u2014 less VRAM"
             },
             {
               "value": 8000,
-              "label": "Balanced (8000)"
+              "label": "Medium (8000)"
             },
             {
               "value": 20000,
-              "label": "Fast (20000)"
+              "label": "High (20000) \u2014 faster"
             }
           ],
-          "tooltip": "VAE decode chunk size. Lower values reduce VRAM usage."
+          "tooltip": "VAE decode chunk size. Lower saves VRAM; higher is faster."
         },
         {
           "id": "box_v",
@@ -421,18 +341,22 @@
           "options": [
             {
               "value": "0.75",
-              "label": "Small (0.75)"
+              "label": "0.75 \u2014 small"
             },
             {
               "value": "1.01",
-              "label": "Default (1.01)"
+              "label": "1.01 \u2014 default"
             },
             {
               "value": "1.25",
-              "label": "Large (1.25)"
+              "label": "1.25 \u2014 large"
+            },
+            {
+              "value": "1.5",
+              "label": "1.5 \u2014 extra large"
             }
           ],
-          "tooltip": "Increase if mesh edges are clipped."
+          "tooltip": "Bounding box scale for mesh extraction. Increase if mesh edges are being clipped."
         },
         {
           "id": "mc_level",
@@ -442,18 +366,26 @@
           "options": [
             {
               "value": "-0.05",
-              "label": "Thicker (-0.05)"
+              "label": "-0.05 \u2014 thicker"
+            },
+            {
+              "value": "-0.02",
+              "label": "-0.02"
             },
             {
               "value": "0.0",
-              "label": "Default (0.0)"
+              "label": "0.0 \u2014 default"
+            },
+            {
+              "value": "0.02",
+              "label": "0.02"
             },
             {
               "value": "0.05",
-              "label": "Thinner (0.05)"
+              "label": "0.05 \u2014 thinner"
             }
           ],
-          "tooltip": "Marching-cubes iso-surface level."
+          "tooltip": "Marching cubes iso-surface level. Increase to thin the mesh; decrease to thicken it."
         },
         {
           "id": "remove_bg",
@@ -463,71 +395,14 @@
           "options": [
             {
               "value": "true",
-              "label": "Yes"
+              "label": "Yes \u2014 auto remove background"
             },
             {
               "value": "false",
-              "label": "No"
+              "label": "No \u2014 images already masked"
             }
           ],
-          "tooltip": "Run rembg before generation."
-        },
-        {
-          "id": "left_image_path",
-          "label": "Left View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional left-side view image path."
-        },
-        {
-          "id": "back_image_path",
-          "label": "Back View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional back view image path."
-        },
-        {
-          "id": "right_image_path",
-          "label": "Right View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional right-side view image path."
+          "tooltip": "Run rembg on input images. Disable if your images already have a transparent background."
         },
         {
           "id": "seed",
@@ -546,35 +421,14 @@
       "name": "Generate Mesh (Standard)",
       "input": "image",
       "inputs": [
-        {
-          "name": "front",
-          "type": "image",
-          "required": true
-        },
-        {
-          "name": "left",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "back",
-          "type": "image",
-          "required": false
-        },
-        {
-          "name": "right",
-          "type": "image",
-          "required": false
-        }
+        "image",
+        "image",
+        "image",
+        "image"
       ],
       "output": "mesh",
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
-      "hf_skip_prefixes": [
-        "hunyuan3d-dit-v2-mv-turbo/",
-        "hunyuan3d-dit-v2-mv-fast/",
-        "hunyuan3d-dit-v2-mv/model.fp16.ckpt"
-      ],
       "params_schema": [
         {
           "id": "model_variant",
@@ -584,10 +438,10 @@
           "options": [
             {
               "value": "hunyuan3d-dit-v2-mv",
-              "label": "Standard"
+              "label": "hunyuan3d-dit-v2-mv"
             }
           ],
-          "tooltip": "Model variant locked for this node."
+          "tooltip": "Model variant (locked per node)."
         },
         {
           "id": "num_inference_steps",
@@ -629,7 +483,7 @@
               "label": "High (512)"
             }
           ],
-          "tooltip": "Octree resolution. Higher values use more VRAM."
+          "tooltip": "Octree resolution. Higher = more detail but more VRAM."
         },
         {
           "id": "guidance_scale",
@@ -639,22 +493,26 @@
           "options": [
             {
               "value": "1.0",
-              "label": "Loose (1.0)"
+              "label": "1.0 \u2014 loose"
+            },
+            {
+              "value": "3.0",
+              "label": "3.0"
             },
             {
               "value": "5.0",
-              "label": "Default (5.0)"
+              "label": "5.0 \u2014 default"
             },
             {
               "value": "7.5",
-              "label": "Strong (7.5)"
+              "label": "7.5"
             },
             {
               "value": "10.0",
-              "label": "Tight (10.0)"
+              "label": "10.0 \u2014 tight"
             }
           ],
-          "tooltip": "Classifier-free guidance strength."
+          "tooltip": "Classifier-free guidance strength. Higher = closer to input image."
         },
         {
           "id": "num_chunks",
@@ -664,18 +522,18 @@
           "options": [
             {
               "value": 2000,
-              "label": "Low VRAM (2000)"
+              "label": "Low (2000) \u2014 less VRAM"
             },
             {
               "value": 8000,
-              "label": "Balanced (8000)"
+              "label": "Medium (8000)"
             },
             {
               "value": 20000,
-              "label": "Fast (20000)"
+              "label": "High (20000) \u2014 faster"
             }
           ],
-          "tooltip": "VAE decode chunk size. Lower values reduce VRAM usage."
+          "tooltip": "VAE decode chunk size. Lower saves VRAM; higher is faster."
         },
         {
           "id": "box_v",
@@ -685,18 +543,22 @@
           "options": [
             {
               "value": "0.75",
-              "label": "Small (0.75)"
+              "label": "0.75 \u2014 small"
             },
             {
               "value": "1.01",
-              "label": "Default (1.01)"
+              "label": "1.01 \u2014 default"
             },
             {
               "value": "1.25",
-              "label": "Large (1.25)"
+              "label": "1.25 \u2014 large"
+            },
+            {
+              "value": "1.5",
+              "label": "1.5 \u2014 extra large"
             }
           ],
-          "tooltip": "Increase if mesh edges are clipped."
+          "tooltip": "Bounding box scale for mesh extraction. Increase if mesh edges are being clipped."
         },
         {
           "id": "mc_level",
@@ -706,18 +568,26 @@
           "options": [
             {
               "value": "-0.05",
-              "label": "Thicker (-0.05)"
+              "label": "-0.05 \u2014 thicker"
+            },
+            {
+              "value": "-0.02",
+              "label": "-0.02"
             },
             {
               "value": "0.0",
-              "label": "Default (0.0)"
+              "label": "0.0 \u2014 default"
+            },
+            {
+              "value": "0.02",
+              "label": "0.02"
             },
             {
               "value": "0.05",
-              "label": "Thinner (0.05)"
+              "label": "0.05 \u2014 thinner"
             }
           ],
-          "tooltip": "Marching-cubes iso-surface level."
+          "tooltip": "Marching cubes iso-surface level. Increase to thin the mesh; decrease to thicken it."
         },
         {
           "id": "remove_bg",
@@ -727,71 +597,14 @@
           "options": [
             {
               "value": "true",
-              "label": "Yes"
+              "label": "Yes \u2014 auto remove background"
             },
             {
               "value": "false",
-              "label": "No"
+              "label": "No \u2014 images already masked"
             }
           ],
-          "tooltip": "Run rembg before generation."
-        },
-        {
-          "id": "left_image_path",
-          "label": "Left View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional left-side view image path."
-        },
-        {
-          "id": "back_image_path",
-          "label": "Back View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional back view image path."
-        },
-        {
-          "id": "right_image_path",
-          "label": "Right View Image",
-          "type": "string",
-          "default": "",
-          "pickerIntent": "image",
-          "filters": [
-            {
-              "name": "Images",
-              "extensions": [
-                "png",
-                "jpg",
-                "jpeg",
-                "webp"
-              ]
-            }
-          ],
-          "tooltip": "Optional right-side view image path."
+          "tooltip": "Run rembg on input images. Disable if your images already have a transparent background."
         },
         {
           "id": "seed",
