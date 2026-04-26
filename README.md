@@ -11,6 +11,7 @@ IF YOU DO NOT HAVE MODLY YET> FOR A WINDOWS INSTALL AT LEAST, HERE ARE THE INSTR
 >>>Step 1 — Clone the repo
 powershell[as admin] 
 '''git clone https://github.com/lightningpixel/modly.git'''
+>>>NOTE: I FOUND OUT IF YOU OPEN POWERSHELL NOT AS ADMIN, JUST NORMALLY, IT SHOULD AUTOMATICALLY PUT THE FOLDER IN THE USER FOLDER WHERE WE WANT IT. THEREFORE, STEP TWO WOULD BE NOT NEEDED :)
 
 >>>Step 2 -  move it somewhere else: recommended: 
 '''Move-Item "C:\Windows\system32\modly" "C:\Users\$env:USERNAME\modly"'''
