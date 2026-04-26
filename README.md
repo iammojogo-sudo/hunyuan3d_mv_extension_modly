@@ -10,7 +10,7 @@ Open a **standard PowerShell** window (you do not need Administrator for this pa
 
 ### Step A: Clone the Repo
 ```powershell
-git clone https://github.com
+git clone https://github.com/lightningpixel/modly.git
 cd "$HOME\modly\api"
 ```
 
