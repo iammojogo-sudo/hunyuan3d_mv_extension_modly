@@ -206,7 +206,7 @@ class Hunyuan3D2mvGenerator(BaseGenerator):
         try:
             generator = torch.Generator(device=self._device).manual_seed(seed)
             with torch.no_grad():
-                mesh = self._pipeline(
+                result = self._pipeline(
                     image=image_dict,
                     num_inference_steps=steps,
                     octree_resolution=octree_res,
@@ -216,7 +216,11 @@ class Hunyuan3D2mvGenerator(BaseGenerator):
                     mc_level=mc_level,
                     generator=generator,
                     output_type="trimesh",
-                )[0]
+                )
+                print("[Hunyuan3D2mvGenerator] Pipeline result type: %s" % type(result))
+                print("[Hunyuan3D2mvGenerator] Pipeline result length: %s" % len(result) if hasattr(result, '__len__') else "N/A")
+                mesh = result[0]
+                print("[Hunyuan3D2mvGenerator] Mesh type: %s" % type(mesh))
         finally:
             stop_evt.set()
             if progress_thread:
@@ -224,7 +228,32 @@ class Hunyuan3D2mvGenerator(BaseGenerator):
 
         self._check_cancelled(cancel_event)
 
-        self._report(progress_cb, 94, "Exporting GLB...")
+        self._report(progress_cb, 94, "Validating and exporting mesh...")
+        
+        # Validate mesh before export
+        if mesh is None:
+            raise RuntimeError("Generated mesh is None")
+        
+        if not hasattr(mesh, 'vertices') or mesh.vertices is None or len(mesh.vertices) == 0:
+            raise RuntimeError("Generated mesh has no vertices")
+        
+        if not hasattr(mesh, 'faces') or mesh.faces is None or len(mesh.faces) == 0:
+            raise RuntimeError("Generated mesh has no faces")
+        
+        print("[Hunyuan3D2mvGenerator] Mesh validation passed: %d vertices, %d faces" % (len(mesh.vertices), len(mesh.faces)))
+        
+        # Check mesh bounds
+        bounds = mesh.bounds
+        print("[Hunyuan3D2mvGenerator] Mesh bounds: %s" % bounds)
+        
+        extents = mesh.extents
+        print("[Hunyuan3D2mvGenerator] Mesh extents: %s" % extents)
+        
+        if extents is not None and all(e > 0 for e in extents):
+            print("[Hunyuan3D2mvGenerator] Mesh has valid extents")
+        else:
+            print("[Hunyuan3D2mvGenerator] WARNING: Mesh may have degenerate geometry (zero extent in some axes)")
+        
         self.outputs_dir.mkdir(parents=True, exist_ok=True)
         out_path = self.outputs_dir / ("%d_%s.glb" % (int(time.time()), uuid.uuid4().hex[:8]))
         mesh.export(str(out_path))
