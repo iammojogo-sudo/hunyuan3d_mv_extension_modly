@@ -27,41 +27,13 @@ def python_exe_in_venv(venv):
     return venv / ("Scripts/python.exe" if is_win else "bin/python")
 
 
-def build_extension(venv_python, source_dir, label):
-    """Build and install a C++/CUDA extension from its setup.py."""
-    source_dir = Path(source_dir)
-    if not source_dir.exists():
-        print("[setup] %s source not found at %s — skipping." % (label, source_dir))
-        return False
-    print("[setup] Building %s..." % label)
-    try:
-        subprocess.run(
-            [str(venv_python), "setup.py", "install"],
-            cwd=str(source_dir),
-            check=True,
-        )
-        print("[setup] %s built and installed successfully." % label)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(
-            "[setup] WARNING: %s build failed (exit code %d).\n"
-            "  Make sure Visual Studio C++ Build Tools are installed:\n"
-            "    https://visualstudio.microsoft.com/visual-cpp-build-tools/\n"
-            "  Then run manually:\n"
-            "    cd \"%s\"\n"
-            "    python setup.py install" % (label, e.returncode, source_dir)
-        )
-        return False
-    except Exception as e:
-        print("[setup] WARNING: %s build error: %s" % (label, e))
-        return False
-
-
 def setup(python_exe, ext_dir, gpu_sm):
     venv = ext_dir / "venv"
+    is_win = platform.system() == "Windows"
 
     print("[setup] Creating venv at %s ..." % venv)
     subprocess.run([python_exe, "-m", "venv", str(venv)], check=True)
+
 
     # ------------------------------------------------------------------ #
     # PyTorch
@@ -115,7 +87,8 @@ def setup(python_exe, ext_dir, gpu_sm):
     )
 
     # ------------------------------------------------------------------ #
-    # Core dependencies
+    # Core dependencies from requirements.txt
+    # (shape-only - skip texture custom rasterizer compilation)
     # ------------------------------------------------------------------ #
     print("[setup] Installing core dependencies...")
     pip(venv, "install",
@@ -136,30 +109,7 @@ def setup(python_exe, ext_dir, gpu_sm):
         "safetensors",
         "rembg",
         "onnxruntime",
-        "pybind11",
     )
-
-    # ------------------------------------------------------------------ #
-    # nvdiffrast — prebuilt NVIDIA rasteriser (replaces custom_rasterizer)
-    #
-    # nvdiffrast ships compiled wheels via pip so users do NOT need the
-    # CUDA toolkit or Visual Studio Build Tools installed. generator.py
-    # patches MeshRender at runtime to use nvdiffrast instead of the
-    # custom_rasterizer CUDA kernel, giving everyone working texturing
-    # out of the box.
-    # ------------------------------------------------------------------ #
-    print("[setup] Installing nvdiffrast...")
-    try:
-        pip(venv, "install", "nvdiffrast")
-        print("[setup] nvdiffrast installed successfully.")
-    except subprocess.CalledProcessError:
-        print(
-            "[setup] WARNING: nvdiffrast failed to install.
-"
-            "  Texture generation will not work.
-"
-            "  Try manually: pip install nvdiffrast"
-        )
 
     # ------------------------------------------------------------------ #
     # onnxruntime-gpu if supported
@@ -171,27 +121,6 @@ def setup(python_exe, ext_dir, gpu_sm):
         except subprocess.CalledProcessError:
             print("[setup] onnxruntime-gpu failed, falling back to cpu.")
             pip(venv, "install", "onnxruntime")
-
-    # ------------------------------------------------------------------ #
-    # Optional C++ extension: mesh_processor
-    #
-    # mesh_processor accelerates UV inpainting inside MeshRender.
-    # A pure-Python fallback already exists in the repo, so this build
-    # is best-effort — texturing works without it, just slightly slower.
-    #
-    # Requires: Visual Studio C++ Build Tools (Windows)
-    #   https://visualstudio.microsoft.com/visual-cpp-build-tools/
-    #
-    # NOTE: custom_rasterizer is NO LONGER built here. nvdiffrast (above)
-    # provides the same functionality without needing the CUDA toolkit.
-    # ------------------------------------------------------------------ #
-    texgen_dir = repo_dir / "hy3dgen" / "texgen"
-
-    build_extension(
-        venv_python,
-        texgen_dir / "differentiable_renderer",
-        "mesh_processor (C++ / pybind11, optional)",
-    )
 
     print("[setup] Done. Venv ready at: %s" % venv)
 
