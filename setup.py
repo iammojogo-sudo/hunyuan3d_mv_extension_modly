@@ -40,29 +40,19 @@ def setup(python_exe, ext_dir, gpu_sm):
     # ------------------------------------------------------------------ #
     if gpu_sm >= 100:
         torch_index = "https://download.pytorch.org/whl/cu128"
-        torch_pkgs = ["torch>=2.7.0", "torchvision>=0.22.0", "torchaudio>=2.7.0"]
+        torch_pkgs = ["torch>=2.7.0", "torchvision>=0.22.0"]
         print("[setup] SM %d (Blackwell) -> PyTorch 2.7 + CUDA 12.8" % gpu_sm)
     elif gpu_sm >= 70:
         torch_index = "https://download.pytorch.org/whl/cu124"
-        torch_pkgs = ["torch==2.5.1", "torchvision==0.20.1", "torchaudio==2.5.1"]
+        torch_pkgs = ["torch==2.5.1", "torchvision==0.20.1"]
         print("[setup] SM %d -> PyTorch 2.5.1 + CUDA 12.4" % gpu_sm)
     else:
         torch_index = "https://download.pytorch.org/whl/cu118"
-        torch_pkgs = ["torch==2.5.1", "torchvision==0.20.1", "torchaudio==2.5.1"]
+        torch_pkgs = ["torch==2.5.1", "torchvision==0.20.1"]
         print("[setup] SM %d (legacy) -> PyTorch 2.5.1 + CUDA 11.8" % gpu_sm)
 
     print("[setup] Installing PyTorch...")
     pip(venv, "install", *torch_pkgs, "--index-url", torch_index)
-
-    # ------------------------------------------------------------------ #
-    # xformers
-    # ------------------------------------------------------------------ #
-    print("[setup] Installing xformers...")
-    if gpu_sm >= 70:
-        pip(venv, "install", "xformers==0.0.28.post3", "--index-url", torch_index)
-    else:
-        pip(venv, "install", "xformers==0.0.28.post2", "--index-url",
-            "https://download.pytorch.org/whl/cu118")
 
     # ------------------------------------------------------------------ #
     # Clone Hunyuan3D-2 repo and install hy3dgen package
@@ -106,21 +96,7 @@ def setup(python_exe, ext_dir, gpu_sm):
         "pygltflib",
         "opencv-python-headless",
         "tqdm",
-        "safetensors",
-        "rembg",
-        "onnxruntime",
     )
-
-    # ------------------------------------------------------------------ #
-    # onnxruntime-gpu if supported
-    # ------------------------------------------------------------------ #
-    if gpu_sm >= 70:
-        print("[setup] Installing onnxruntime-gpu...")
-        try:
-            pip(venv, "install", "onnxruntime-gpu")
-        except subprocess.CalledProcessError:
-            print("[setup] onnxruntime-gpu failed, falling back to cpu.")
-            pip(venv, "install", "onnxruntime")
 
     print("[setup] Done. Venv ready at: %s" % venv)
 
