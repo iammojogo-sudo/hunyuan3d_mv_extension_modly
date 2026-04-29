@@ -23,23 +23,19 @@
         "image"
       ],
       "hf_repo": "tencent/Hunyuan3D-2mv",
-      "download_check": "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
+      "download_check": "hunyuan3d-dit-v2-mv-turbo/model.fp16.safetensors",
       "hf_skip_prefixes": [
-        "hunyuan3d-dit-v2-mv-turbo/",
-        "hunyuan3d-dit-v2-mv-fast/",
-        "hunyuan3d-dit-v2-mv/model.fp16.ckpt"
+        "hunyuan3d-dit-v2-mv/model.fp16.ckpt",
+        "hunyuan3d-dit-v2-mv-turbo/model.fp16.ckpt",
+        "hunyuan3d-dit-v2-mv-fast/model.fp16.ckpt"
       ],
       "params_schema": [
         {
           "id": "model_variant",
           "label": "Model Variant",
           "type": "select",
-          "default": "hunyuan3d-dit-v2-mv",
+          "default": "hunyuan3d-dit-v2-mv-turbo",
           "options": [
-            {
-              "value": "hunyuan3d-dit-v2-mv",
-              "label": "Standard"
-            },
             {
               "value": "hunyuan3d-dit-v2-mv-turbo",
               "label": "Turbo"
@@ -47,6 +43,10 @@
             {
               "value": "hunyuan3d-dit-v2-mv-fast",
               "label": "Fast"
+            },
+            {
+              "value": "hunyuan3d-dit-v2-mv",
+              "label": "Standard"
             }
           ],
           "tooltip": "Select the model variant for mesh generation."
