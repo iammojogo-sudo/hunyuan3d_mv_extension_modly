@@ -116,7 +116,7 @@ def setup(python_exe, ext_dir, gpu_sm):
         "tqdm",
         "safetensors",
         "rembg",
-	"ninja",
+		"ninja",
     )
 
     # ------------------------------------------------------------------ #
