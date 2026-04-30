@@ -80,13 +80,6 @@ def setup(python_exe, ext_dir, gpu_sm):
 
     venv_python = python_exe_in_venv(venv)
 
-    print("[setup] Building custom rasterizer...")
-    subprocess.run(
-        [str(venv_python), "setup.py", "build_ext", "--inplace"],
-        cwd=str(repo_dir / "hy3dgen" / "texgen" / "custom_rasterizer"),
-        check=True
-    )
-
     print("[setup] Installing hy3dgen package...")
     subprocess.run(
         [str(venv_python), "-m", "pip", "install", "-e", str(repo_dir)],
