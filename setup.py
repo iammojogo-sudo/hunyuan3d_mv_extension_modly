@@ -241,6 +241,9 @@ def setup(python_exe, ext_dir, gpu_sm):
     # Core dependencies
     # ------------------------------------------------------------------ #
     print("[setup] Installing core dependencies...")
+    # Pin huggingface_hub first — diffusers 0.27.2 needs cached_download which
+    # was removed in newer versions. Must be installed before diffusers.
+    pip(venv, "install", "huggingface_hub==0.23.5")
     pip(venv, "install",
         "transformers==4.40.2",
         "diffusers==0.27.2",
