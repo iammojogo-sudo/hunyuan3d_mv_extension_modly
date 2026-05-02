@@ -16,8 +16,12 @@
     {
       "id": "generate",
       "name": "Generate Mesh",
-      "input": "image",
-      "output": "mesh",
+      "inputs": [
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
       "hf_repo": "tencent/Hunyuan3D-2mv",
       "download_check": "hunyuan3d-dit-v2-mv-turbo/model.fp16.safetensors",
       "hf_skip_prefixes": [
@@ -32,11 +36,20 @@
           "type": "select",
           "default": "hunyuan3d-dit-v2-mv-turbo",
           "options": [
-            { "value": "hunyuan3d-dit-v2-mv-turbo", "label": "Turbo" },
-            { "value": "hunyuan3d-dit-v2-mv-fast",  "label": "Fast" },
-            { "value": "hunyuan3d-dit-v2-mv",        "label": "Standard" }
+            {
+              "value": "hunyuan3d-dit-v2-mv-turbo",
+              "label": "Turbo"
+            },
+            {
+              "value": "hunyuan3d-dit-v2-mv-fast",
+              "label": "Fast"
+            },
+            {
+              "value": "hunyuan3d-dit-v2-mv",
+              "label": "Standard"
+            }
           ],
-          "tooltip": "Select the model variant. Turbo is fastest; Standard is highest quality."
+          "tooltip": "Select the model variant for mesh generation."
         },
         {
           "id": "num_inference_steps",
@@ -44,11 +57,20 @@
           "type": "select",
           "default": 30,
           "options": [
-            { "value": 10, "label": "Fast (10)" },
-            { "value": 30, "label": "Balanced (30)" },
-            { "value": 50, "label": "Quality (50)" }
+            {
+              "value": 10,
+              "label": "Fast (10)"
+            },
+            {
+              "value": 30,
+              "label": "Balanced (30)"
+            },
+            {
+              "value": 50,
+              "label": "Quality (50)"
+            }
           ],
-          "tooltip": "Number of diffusion steps. More steps take longer but can improve quality."
+          "tooltip": "Number of diffusion steps."
         },
         {
           "id": "octree_resolution",
@@ -56,11 +78,20 @@
           "type": "select",
           "default": 380,
           "options": [
-            { "value": 256, "label": "Low (256)" },
-            { "value": 380, "label": "Medium (380)" },
-            { "value": 512, "label": "High (512)" }
+            {
+              "value": 256,
+              "label": "Low (256)"
+            },
+            {
+              "value": 380,
+              "label": "Medium (380)"
+            },
+            {
+              "value": 512,
+              "label": "High (512)"
+            }
           ],
-          "tooltip": "Octree resolution controls mesh detail. Higher values use more VRAM."
+          "tooltip": "Octree resolution. Higher values use more VRAM."
         },
         {
           "id": "guidance_scale",
@@ -68,10 +99,22 @@
           "type": "select",
           "default": "5.0",
           "options": [
-            { "value": "1.0",  "label": "Loose (1.0)" },
-            { "value": "5.0",  "label": "Default (5.0)" },
-            { "value": "7.5",  "label": "Strong (7.5)" },
-            { "value": "10.0", "label": "Tight (10.0)" }
+            {
+              "value": "1.0",
+              "label": "Loose (1.0)"
+            },
+            {
+              "value": "5.0",
+              "label": "Default (5.0)"
+            },
+            {
+              "value": "7.5",
+              "label": "Strong (7.5)"
+            },
+            {
+              "value": "10.0",
+              "label": "Tight (10.0)"
+            }
           ],
           "tooltip": "Classifier-free guidance strength."
         },
@@ -81,11 +124,20 @@
           "type": "select",
           "default": 8000,
           "options": [
-            { "value": 2000,  "label": "Low VRAM (2000)" },
-            { "value": 8000,  "label": "Balanced (8000)" },
-            { "value": 20000, "label": "Fast (20000)" }
+            {
+              "value": 2000,
+              "label": "Low VRAM (2000)"
+            },
+            {
+              "value": 8000,
+              "label": "Balanced (8000)"
+            },
+            {
+              "value": 20000,
+              "label": "Fast (20000)"
+            }
           ],
-          "tooltip": "VAE decode chunk size. Lower values reduce VRAM usage at the cost of speed."
+          "tooltip": "VAE decode chunk size. Lower values reduce VRAM usage."
         },
         {
           "id": "box_v",
@@ -93,11 +145,20 @@
           "type": "select",
           "default": "1.01",
           "options": [
-            { "value": "0.75", "label": "Small (0.75)" },
-            { "value": "1.01", "label": "Default (1.01)" },
-            { "value": "1.25", "label": "Large (1.25)" }
+            {
+              "value": "0.75",
+              "label": "Small (0.75)"
+            },
+            {
+              "value": "1.01",
+              "label": "Default (1.01)"
+            },
+            {
+              "value": "1.25",
+              "label": "Large (1.25)"
+            }
           ],
-          "tooltip": "Increase if mesh edges appear clipped."
+          "tooltip": "Increase if mesh edges are clipped."
         },
         {
           "id": "mc_level",
@@ -105,9 +166,18 @@
           "type": "select",
           "default": "0.0",
           "options": [
-            { "value": "-0.05", "label": "Thicker (-0.05)" },
-            { "value": "0.0",   "label": "Default (0.0)" },
-            { "value": "0.05",  "label": "Thinner (0.05)" }
+            {
+              "value": "-0.05",
+              "label": "Thicker (-0.05)"
+            },
+            {
+              "value": "0.0",
+              "label": "Default (0.0)"
+            },
+            {
+              "value": "0.05",
+              "label": "Thinner (0.05)"
+            }
           ],
           "tooltip": "Marching-cubes iso-surface level."
         },
@@ -117,10 +187,16 @@
           "type": "select",
           "default": "true",
           "options": [
-            { "value": "true",  "label": "Yes" },
-            { "value": "false", "label": "No" }
+            {
+              "value": "true",
+              "label": "Yes"
+            },
+            {
+              "value": "false",
+              "label": "No"
+            }
           ],
-          "tooltip": "Run rembg on the input image before generation."
+          "tooltip": "Run rembg before generation."
         },
         {
           "id": "left_image_path",
@@ -128,8 +204,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional left-side view image."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional left-side view image path."
         },
         {
           "id": "back_image_path",
@@ -137,8 +223,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional back view image."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional back view image path."
         },
         {
           "id": "right_image_path",
@@ -146,8 +242,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional right-side view image."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional right-side view image path."
         },
         {
           "id": "seed",
@@ -156,9 +262,11 @@
           "default": 42,
           "min": 0,
           "max": 4294967295,
-          "tooltip": "Random seed. Change this if the result is unsatisfying."
+          "tooltip": "Change if result is unsatisfying."
         }
-      ]
+      ],
+      "output": "mesh",
+      "input": "image"
     },
     {
       "id": "texture",
@@ -184,7 +292,17 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
           "tooltip": "Required. The front view image used to drive texture generation."
         },
         {
@@ -193,8 +311,14 @@
           "type": "select",
           "default": "hunyuan3d-paint-v2-0-turbo",
           "options": [
-            { "value": "hunyuan3d-paint-v2-0-turbo", "label": "Turbo (faster)" },
-            { "value": "hunyuan3d-paint-v2-0",        "label": "Standard (higher quality)" }
+            {
+              "value": "hunyuan3d-paint-v2-0-turbo",
+              "label": "Turbo (faster)"
+            },
+            {
+              "value": "hunyuan3d-paint-v2-0",
+              "label": "Standard (higher quality)"
+            }
           ],
           "tooltip": "Turbo is faster; Standard produces more detailed textures."
         },
@@ -204,8 +328,14 @@
           "type": "select",
           "default": "true",
           "options": [
-            { "value": "true",  "label": "Yes" },
-            { "value": "false", "label": "No" }
+            {
+              "value": "true",
+              "label": "Yes"
+            },
+            {
+              "value": "false",
+              "label": "No"
+            }
           ],
           "tooltip": "Run rembg on reference images before texturing."
         },
@@ -215,8 +345,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional. Extra views improve texture coverage on hidden surfaces."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
         },
         {
           "id": "back_image_path",
@@ -224,8 +364,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional. Extra views improve texture coverage on hidden surfaces."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
         },
         {
           "id": "right_image_path",
@@ -233,8 +383,18 @@
           "type": "string",
           "default": "",
           "pickerIntent": "image",
-          "filters": [{ "name": "Images", "extensions": ["png", "jpg", "jpeg", "webp"] }],
-          "tooltip": "Optional. Extra views improve texture coverage on hidden surfaces."
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
         }
       ]
     }
