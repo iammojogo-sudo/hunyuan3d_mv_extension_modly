@@ -95,6 +95,30 @@ def _build_custom_rasterizer(venv_python, rast_dir):
         `import custom_rasterizer` resolves regardless of cwd / sys.path.
     """
     rast_dir = Path(rast_dir)
+
+    # Check for a pre-built .pyd shipped with the extension repo
+    ext_dir = Path(__file__).parent
+    prebuilt = (
+        list(ext_dir.glob("custom_rasterizer_kernel*.pyd")) +
+        list(ext_dir.glob("custom_rasterizer_kernel*.so"))
+    )
+    if prebuilt:
+        artifact = prebuilt[0]
+        print("[setup] Found pre-built rasterizer: %s" % artifact)
+        try:
+            if IS_WIN:
+                site_pkgs = venv_python.parent.parent / "Lib" / "site-packages"
+            else:
+                site_pkgs = sorted(
+                    (venv_python.parent.parent / "lib").glob("python*/site-packages")
+                )[-1]
+            dest = site_pkgs / artifact.name
+            shutil.copy2(str(artifact), str(dest))
+            print("[setup] Installed pre-built %s -> %s" % (artifact.name, site_pkgs))
+        except Exception as exc:
+            print("[setup] Could not copy pre-built rasterizer: %s" % exc)
+        return True
+
     print("[setup] Building custom_rasterizer in %s ..." % rast_dir)
 
     env = os.environ.copy()
