@@ -241,9 +241,6 @@ def setup(python_exe, ext_dir, gpu_sm):
     # Core dependencies
     # ------------------------------------------------------------------ #
     print("[setup] Installing core dependencies...")
-    # Pin huggingface_hub first — diffusers 0.27.2 needs cached_download which
-    # was removed in newer versions. Must be installed before diffusers.
-    pip(venv, "install", "huggingface_hub==0.23.5")
     pip(venv, "install",
         "transformers==4.40.2",
         "diffusers==0.27.2",
@@ -317,6 +314,15 @@ def setup(python_exe, ext_dir, gpu_sm):
     subprocess.run(
         [str(venv_python), "-m", "pip", "install", "-e", str(repo_dir)],
         check=True
+    )
+
+    # hy3dgen pulls in newer huggingface_hub which breaks diffusers==0.27.2
+    # (cached_download was removed). Force-reinstall the pinned versions last.
+    print("[setup] Re-pinning huggingface_hub and diffusers versions...")
+    pip(venv, "install", "--force-reinstall", "--no-deps",
+        "huggingface_hub==0.23.5",
+        "diffusers==0.27.2",
+        "transformers==4.40.2",
     )
 
     # ------------------------------------------------------------------ #
