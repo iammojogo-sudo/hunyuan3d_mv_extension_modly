@@ -1,3 +1,7 @@
+RECENT UPDATES: 
+-Included texture Hunuan3D2 paint pipeline for baseline texturing
+
+
 # Modly Installation Guide (Windows)
 
 This guide provides a clean, step-by-step installation process for Windows users using PowerShell.
