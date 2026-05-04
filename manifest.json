@@ -2,7 +2,7 @@
   "id": "hunyuan3d2mv",
   "name": "Hunyuan3D-2mv",
   "type": "model",
-  "source": "https://github.com/iammojogo-sudo/hunyuan3d_mv_extension_modly",
+  "source": "https://github.com/iammojogo-sudo/hunyuan3d2mv_development_branch",
   "description": "Multi-view image-to-3D mesh generation using Tencent Hunyuan3D-2mv. Accepts front, left, back and right view images to reconstruct a detailed untextured mesh. Only the front view is required.",
   "version": "1.0.0",
   "author": "Lightning Pixel",
@@ -267,6 +267,136 @@
       ],
       "output": "mesh",
       "input": "image"
+    },
+    {
+      "id": "texture",
+      "name": "Apply Texture",
+      "type": "process",
+      "entry": "processor.js",
+      "input": "mesh",
+      "output": "mesh",
+      "hf_repo": "tencent/Hunyuan3D-2",
+      "download_check": "hunyuan3d-delight-v2-0",
+      "hf_skip_prefixes": [
+        "hunyuan3d-dit-v2-0/",
+        "hunyuan3d-dit-v2-0/*",
+        "hunyuan3d-dit-v2-0-turbo/",
+        "hunyuan3d-dit-v2-0-turbo/*",
+        "hunyuan3d-dit-v2-0-fast/",
+        "hunyuan3d-dit-v2-0-fast/*"
+      ],
+      "params_schema": [
+        {
+          "id": "front_image_path",
+          "label": "Front View Image",
+          "type": "string",
+          "default": "",
+          "pickerIntent": "image",
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Required. The front view image used to drive texture generation."
+        },
+        {
+          "id": "texture_variant",
+          "label": "Texture Model",
+          "type": "select",
+          "default": "hunyuan3d-paint-v2-0-turbo",
+          "options": [
+            {
+              "value": "hunyuan3d-paint-v2-0-turbo",
+              "label": "Turbo (faster)"
+            },
+            {
+              "value": "hunyuan3d-paint-v2-0",
+              "label": "Standard (higher quality)"
+            }
+          ],
+          "tooltip": "Turbo is faster; Standard produces more detailed textures."
+        },
+        {
+          "id": "remove_bg",
+          "label": "Remove Background",
+          "type": "select",
+          "default": "true",
+          "options": [
+            {
+              "value": "true",
+              "label": "Yes"
+            },
+            {
+              "value": "false",
+              "label": "No"
+            }
+          ],
+          "tooltip": "Run rembg on reference images before texturing."
+        },
+        {
+          "id": "left_image_path",
+          "label": "Left View Image",
+          "type": "string",
+          "default": "",
+          "pickerIntent": "image",
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
+        },
+        {
+          "id": "back_image_path",
+          "label": "Back View Image",
+          "type": "string",
+          "default": "",
+          "pickerIntent": "image",
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
+        },
+        {
+          "id": "right_image_path",
+          "label": "Right View Image",
+          "type": "string",
+          "default": "",
+          "pickerIntent": "image",
+          "filters": [
+            {
+              "name": "Images",
+              "extensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp"
+              ]
+            }
+          ],
+          "tooltip": "Optional. Extra views improve texture coverage."
+        }
+      ]
     }
   ],
   "generator_class": "Hunyuan3D2mvGenerator"
